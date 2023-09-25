@@ -1,0 +1,99 @@
+syntax = "proto3";
+
+package planoutcome.v3;
+
+option csharp_namespace = "Planoutcome";
+option go_package = "gitlab.com/nielsen-media/me/planning/tp/proto-golang/planoutcome/v3;planoutcome";
+
+import "common/v1/types.proto";
+import "google/protobuf/timestamp.proto";
+
+message AudiencePerType {
+  common.v1.GUID id = 1;
+  repeated common.v1.GUID audience_ids = 2;
+}
+
+enum ResultState {
+  RESULT_STATE_UNSPECIFIED = 0;
+  RESULT_STATE_OUTDATED = 1;
+  RESULT_STATE_UP_TO_DATE = 3;
+}
+
+enum KpiValueType {
+  KPI_VALUE_TYPE_UNSPECIFIED = 0;
+  KPI_VALUE_TYPE_DOUBLE = 1;
+  KPI_VALUE_TYPE_PERCENTAGE = 2;
+  KPI_VALUE_TYPE_MONEY = 3;
+}
+
+message KpiResult {
+  string id = 1;
+  common.v1.GUID audience_id = 2;
+  string name = 3;
+  KpiValue value = 4;
+  bool success = 5;
+  string message = 6;
+  KpiValueType kpi_value_type = 7;
+}
+
+message KpiResultPerType {
+  common.v1.GUID id = 1;
+  google.protobuf.Timestamp created_at = 2;
+  google.protobuf.Timestamp modified_at = 3;
+  ResultState state = 4;
+  repeated KpiResult results = 5;
+}
+
+message KpiResultForBuy {
+  common.v1.GUID buy_id = 1;
+  KpiResult result = 2;
+}
+
+message KpiResultForLabel {
+  string label = 1;
+  KpiResult result = 2;
+}
+
+message PredictedBuy {
+  common.v1.GUID buy_id = 1;
+  string name = 2;
+  common.v1.Date start = 3;
+  common.v1.Date end = 4;
+  double insertions = 5;
+  double cost_per_insertion = 6;
+}
+
+message KpiMetadata {
+  string id = 1;
+  string name = 2;
+  KpiValueType kpi_value_type = 3;
+}
+
+message AttachReachGoal {
+  common.v1.GUID audience_id = 1;
+   repeated AttachKpiReachGoal kpi_reach_goals = 2;
+}
+message AttachKpiReachGoal {
+  string id = 1;
+  KpiValue value = 2;
+}
+
+message ReachGoal {
+  common.v1.GUID audience_id = 1;
+   repeated KpiReachGoal kpi_reach_goals = 2;
+}
+
+message KpiReachGoal {
+  string id = 1;
+  string name = 2;
+  KpiValue value = 3;
+  KpiValueType kpi_value_type = 4;
+}
+
+message KpiValue {
+  oneof kpi_value {
+    double kpi_double_value = 1;
+    double kpi_percentage_value = 2;
+    common.v1.Money kpi_money_value = 3;
+  }
+}

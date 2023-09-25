@@ -1,0 +1,146 @@
+syntax = "proto3";
+
+import "common/v1/types.proto";
+
+package plan_outcome_predicting.v1;
+
+option csharp_namespace = "PlanOutcomePredicting";
+option go_package = "gitlab.com/nielsen-media/me/planning/tp/proto-golang/Planoutcomepredicting/v1;Planoutcomepredicting";
+option java_package = "com.nielsen.tp.proto.Planoutcomepredicting.v1";
+
+
+service PlanOutcomeService {
+  rpc GetStatisticsForPlan(GetStatisticsForPlanRequest) returns (GetStatisticsForPlanResponse);
+}
+
+message Audience {
+  common.v1.GUID id = 1;
+}
+
+message GetStatisticsForPlanRequest {
+  PlanData plan = 1;
+  bool evaluate_results_total = 2;
+  bool evaluate_results_per_buy = 3;
+  bool evaluate_results_per_label = 4;
+}
+
+message GetStatisticsForPlanResponse {
+  repeated KpiResult results_total = 1;
+  repeated KpiResultForBuy results_per_buy = 2;
+  repeated KpiResultForLabel results_per_label = 3;
+}
+
+message KpiResult {
+  string id = 1;
+  common.v1.GUID audience_id = 2;
+  string name = 3;
+  KpiValue value = 4;
+  bool success = 5;
+  string message = 6;
+  KpiValueType kpi_value_type = 7;
+}
+
+message KpiResultForBuy {
+  common.v1.GUID buy_id = 1;
+  KpiResult result = 2;
+}
+
+message KpiResultForLabel {
+  string label = 1;
+  KpiResult result = 2;
+}
+
+message PlanData {
+  common.v1.GUID plan_id = 1;
+  string name = 2;
+  string description = 3;
+  common.v1.Period period = 4;
+  repeated Audience evaluation_audiences = 5;
+  repeated Buy buys = 6;
+}
+
+message BM {
+  common.v1.GUID id = 1;
+}
+
+message Buy {
+  oneof value {
+    LinearBuy linear_buy = 1;
+    AddressableBuy addressable_buy = 2;
+  }
+}
+
+message LinearBuy {
+  string key = 1;
+  BM buyable_medium = 2;
+  common.v1.Period period = 3;
+  Audience audience = 4;
+  double grp = 5;
+  double cost_per_grp = 6;
+}
+
+message AddressableBuy {
+  string key = 1;
+  BM buyable_medium = 2;
+  common.v1.Period period = 3;
+  Audience audience = 4;
+  double impressions000 = 5;
+  int32 frequency_cap = 6;
+  double cost_per_impressions000 = 7;
+}
+
+message KpiValue {
+  oneof value {
+    KpiDoubleValue kpi_double_value = 1;
+    KpiPercentageValue kpi_percentage_value = 2;
+    KpiMoneyValue kpi_money_value = 3;
+  }
+}
+
+message KpiMoneyValue {
+  common.v1.Money value = 1;
+}
+message KpiDoubleValue {
+  double value = 1;
+}
+
+message KpiPercentageValue {
+  double value = 1;
+}
+
+enum KpiValueType {
+  KPI_VALUE_TYPE_UNSPECIFIED = 0;
+  KPI_VALUE_TYPE_DOUBLE = 1;
+  KPI_VALUE_TYPE_PERCENTAGE = 2;
+  KPI_VALUE_TYPE_MONEY = 3;
+}
+
+enum ErrorType {
+  ERROR_TYPE_UNSPECIFIED = 0;
+  ERROR_TYPE_EMPTY_PLAN = 1;
+  ERROR_TYPE_UNDEFINED_PLAN_KEY = 2;
+  ERROR_TYPE_UNDEFINED_EVALUATION_AUDIENCE = 3;
+  ERROR_TYPE_UNDEFINED_BUYABLE_MEDIA = 4;
+  ERROR_TYPE_INVALID_PLAN_PERIOD = 5;
+  ERROR_TYPE_INVALID_BUY_PERIOD = 6;
+
+}
+
+message InvalidPeriodErrorResponse {
+  ErrorType error_type = 1;
+  string explanation = 2;
+  common.v1.Date start_date = 3;
+  common.v1.Date end_date = 4;
+}
+
+message GenericErrorResponse {
+  ErrorType error_type = 1;
+  string explanation = 2;
+}
+
+message ErrorResponse {
+  oneof sealed_value {
+    GenericErrorResponse generic_error = 1;
+    InvalidPeriodErrorResponse invalid_period_error = 2;
+  }
+}

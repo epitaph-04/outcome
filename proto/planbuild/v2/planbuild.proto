@@ -1,0 +1,421 @@
+syntax = "proto3";
+
+package planbuild.v2;
+
+option csharp_namespace = "PlanBuilding";
+option go_package = "gitlab.com/nielsen-media/me/planning/tp/proto-golang/planbuild/v2;planbuild";
+
+import "common/v1/types.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+service PlanBuildService {
+  rpc BeginPlan (BeginPlanRequest) returns (BeginPlanResponse);
+  rpc UpdatePlanDescription (UpdatePlanDescriptionRequest) returns (google.protobuf.Empty);
+  rpc UpdatePlanAnnotation (UpdatePlanAnnotationRequest) returns (google.protobuf.Empty);
+  rpc UpdatePlanBudget (UpdatePlanBudgetRequest) returns (google.protobuf.Empty);
+  rpc UpdatePlanName (UpdatePlanNameRequest) returns (google.protobuf.Empty);
+  rpc DeletePlan (DeletePlanRequest) returns (google.protobuf.Empty);
+  rpc ApprovePlan (ApprovePlanRequest) returns (google.protobuf.Empty);
+  rpc ArchivePlan (ArchivePlanRequest) returns (google.protobuf.Empty);
+  rpc ReopenPlan (ReopenPlanRequest) returns (google.protobuf.Empty);
+  rpc UpdateStatus (UpdateStatusRequest) returns (google.protobuf.Empty);
+  rpc CopyPlan (CopyPlanRequest) returns (CopyPlanResponse);
+  rpc UpdatePlanSource (UpdatePlanSourceRequest) returns (google.protobuf.Empty);
+  rpc CreatePlanVariant (CreatePlanVariantRequest) returns (CreatePlanVariantResponse);
+
+  rpc AddLinearBuy (AddLinearBuyRequest) returns (AddLinearBuyResponse);
+  rpc AddAddressableBuy (AddAddressableBuyRequest) returns (AddAddressableBuyResponse);
+  rpc UpdateBuyInputGrp (UpdateBuyInputGrpRequest) returns (google.protobuf.Empty);
+  rpc UpdateBuyInputImpressions000 (UpdateBuyInputImpressions000Request) returns (google.protobuf.Empty);
+  rpc UpdateCostPerGrp (UpdateCostPerGrpRequest) returns (google.protobuf.Empty);
+  rpc UpdateCostPerThousandImpressions (UpdateCostPerThousandImpressionsRequest) returns (google.protobuf.Empty);
+  rpc UpdateBuyingAudience (UpdateBuyingAudienceRequest) returns (google.protobuf.Empty);
+  rpc UpdateBuyingPeriod (UpdateBuyingPeriodRequest) returns (google.protobuf.Empty);
+  rpc UpdateFrequencyCapping (UpdateFrequencyCappingRequest) returns (google.protobuf.Empty);
+  rpc RemoveBuy (RemoveBuyRequest) returns (google.protobuf.Empty);
+    
+  rpc GetBuys (GetBuysRequest) returns (GetBuysResponse);
+  rpc GetPlans (GetPlansRequest) returns (GetPlansResponse);
+  rpc GetAllPlans (google.protobuf.Empty) returns (GetAllPlansResponse);
+  rpc GetArchivedPlans (google.protobuf.Empty) returns (GetArchivedPlansResponse);
+  rpc GetBuyReport (GetBuyReportRequest) returns (GetBuyReportResponse);
+  rpc GetLinearBuysOverview (GetLinearBuysOverviewRequest) returns (GetLinearBuysOverviewResponse);
+  rpc GetAddressableBuysOverview (GetAddressableBuysOverviewRequest) returns (GetAddressableBuysOverviewResponse);
+  rpc GetBuyReportForVariant (GetBuyReportForVariantRequest) returns (GetBuyReportForVariantResponse);
+
+}
+
+message GetBuyReportForVariantRequest {
+  common.v1.GUID plan_id = 1;
+  repeated UpdateInputFactor updated_input_factors = 2;
+}
+
+message GetBuyReportForVariantResponse {
+  common.v1.GUID id = 1;
+  repeated GenericBuy buys = 2;
+  repeated ByPublisher by_publisher = 3;
+  repeated ByLabel by_label = 4;
+}
+
+message UpdateInputFactor {
+  common.v1.GUID buy_id = 1;
+  double factor = 2;
+                            // to get new value we take original input (grps or impressions000, depending on buy type) and multiply by factor
+                            // factor >=0
+                            // factor = 0 => set new input value to 0
+                            // factor < 1 => decrease
+                            // factor = 1 => keep original value
+                            // factor > 1 => increase
+}
+
+message BeginPlanRequest {
+  string name = 1;
+  string description = 2;
+  string annotation = 3;
+  string source = 4;
+}
+
+message BeginPlanResponse {
+  common.v1.GUID plan_id = 1;
+}
+
+message CopyPlanRequest {
+  common.v1.GUID plan_id = 1;
+  string name = 2;
+  string description = 3;
+}
+
+message CreatePlanVariantRequest {
+  common.v1.GUID plan_id = 1;
+  string name = 2;
+  string description = 3;
+  string annotation = 4;
+  string source = 5;
+  repeated UpdateInputFactor updated_input_factors = 6;
+}
+
+message CopyPlanResponse {
+  common.v1.GUID plan_id = 1;
+}
+
+message CreatePlanVariantResponse {
+  common.v1.GUID plan_id = 1;
+}
+
+message GetPlansRequest {
+  repeated common.v1.GUID plan_ids = 1;
+  repeated PlanStatus allowed_status_list = 2;
+}
+
+message GetBuysResponse {
+  repeated BuyDetail buy_details = 1;
+}
+
+message BuyDetail {
+  oneof buy_detail {
+    LinearBuyDetail linear_buy_detail = 1;
+    AddressableBuyDetail addressable_buy_detail = 2;
+  }
+}
+
+message UpdateStatusRequest {
+  common.v1.GUID plan_id = 1;
+  PlanStatus status = 2;
+}
+
+message ApprovePlanRequest {
+  common.v1.GUID plan_id = 1;
+}
+
+message ArchivePlanRequest {
+  common.v1.GUID plan_id = 1;
+}
+
+message ReopenPlanRequest {
+  common.v1.GUID plan_id = 1;
+}
+
+enum PlanStatus {
+  PLAN_STATUS_UNSPECIFIED = 0;
+  PLAN_STATUS_DRAFT = 1;
+  PLAN_STATUS_APPROVED = 2;
+  PLAN_STATUS_ARCHIVED = 3;
+  PLAN_STATUS_TO_BE_DELETED = 4;
+}
+
+enum BuyType {
+  BUY_TYPE_UNSPECIFIED = 0;
+  BUY_TYPE_LINEAR_BUY = 1;
+  BUY_TYPE_ADDRESSABLE_BUY = 2;
+}
+
+message LinearBuyDetail {
+  BuyType buy_type = 1;
+  common.v1.GUID id = 2;
+  common.v1.GUID plan_id = 3;
+  common.v1.GUID buyable_medium_id = 4;
+  google.protobuf.Timestamp	start = 5;
+  google.protobuf.Timestamp end = 6;
+  common.v1.GUID buying_audience_id = 7;
+  double grp = 8;
+  common.v1.Money cost_per_grp = 9;
+}
+
+message AddressableBuyDetail {
+  BuyType buy_type = 1;
+  common.v1.GUID id = 2;
+  common.v1.GUID plan_id = 3;
+  common.v1.GUID buyable_medium_id = 4;
+  google.protobuf.Timestamp	start = 5;
+  google.protobuf.Timestamp end = 6;
+  common.v1.GUID buying_audience_id = 7;
+  double impressions_000 = 8;
+  // frequency_cap = 0 represent frequency_cap to be null
+  int32 frequency_cap = 9;
+  common.v1.Money cost_per_thousand_impressions = 10;
+}
+
+message UpdatePlanDescriptionRequest {
+  common.v1.GUID plan_id = 1;
+  string description = 2;
+}
+
+message UpdatePlanBudgetRequest {
+  common.v1.GUID plan_id = 1;
+  common.v1.Money budget = 2;
+}
+
+message UpdatePlanNameRequest {
+  common.v1.GUID plan_id = 1;
+  string name = 2;
+}
+
+message DeletePlanRequest {
+  common.v1.GUID plan_id = 1;
+}
+
+message AddAddressableBuyRequest {
+  common.v1.GUID plan_id = 1;
+  google.protobuf.Timestamp start = 2;
+  google.protobuf.Timestamp end = 3;
+  double impressions_000 = 4;
+  common.v1.GUID buyable_medium_id = 5;
+  common.v1.GUID buying_audience_id = 6;
+  int32 frequency_cap = 7;
+  common.v1.Money cost_per_thousand_impressions = 8;
+}
+
+message AddLinearBuyRequest {
+  common.v1.GUID plan_id = 1;
+  google.protobuf.Timestamp start = 2;
+  google.protobuf.Timestamp end = 3;
+  double grp = 4;
+  common.v1.GUID buyable_medium_id = 5;
+  common.v1.GUID buying_audience_id = 6;
+  common.v1.Money cost_per_grp = 7;
+}
+
+message AddAddressableBuyResponse {
+  common.v1.GUID buy_id = 1;
+}
+
+message AddLinearBuyResponse {
+  common.v1.GUID buy_id = 1;
+}
+
+message GetBuysRequest {
+  repeated common.v1.GUID plan_ids = 1;
+}
+
+message RemoveBuyRequest {
+  common.v1.GUID plan_id = 1;
+  common.v1.GUID buy_id = 2;
+}
+
+message UpdateBuyInputGrpRequest {
+  common.v1.GUID plan_id = 1;
+  common.v1.GUID buy_id = 2;
+  double grp = 3;
+}
+
+message UpdateBuyInputImpressions000Request {
+  common.v1.GUID plan_id = 1;
+  common.v1.GUID buy_id = 2;
+  double impressions_000 = 3;
+}
+
+message UpdateCostPerGrpRequest {
+  common.v1.GUID plan_id = 1;
+  common.v1.GUID buy_id = 2;
+  common.v1.Money cost = 3;
+}
+
+message UpdateCostPerThousandImpressionsRequest {
+  common.v1.GUID plan_id = 1;
+  common.v1.GUID buy_id = 2;
+  common.v1.Money cost = 3;
+}
+
+message GetPlansResponse {
+  repeated PlanDetail details = 1;
+}
+
+message GetAllPlansResponse {
+  repeated PlanDetail details = 1;
+}
+
+message UpdateBuyingPeriodRequest {
+  common.v1.GUID plan_id = 1;
+  common.v1.GUID buy_id = 2;
+  google.protobuf.Timestamp start = 3;
+  google.protobuf.Timestamp end = 4;
+}
+
+message UpdateBuyingAudienceRequest {
+  common.v1.GUID plan_id = 1;
+  common.v1.GUID buy_id = 2;
+  common.v1.GUID buying_audience_id = 3;
+}
+
+message UpdateFrequencyCappingRequest {
+  common.v1.GUID plan_id = 1;
+  common.v1.GUID buy_id = 2;
+  int32 frequency_cap = 3;
+}
+
+message PlanDetail {
+  common.v1.GUID id = 1;
+  string name = 2;
+  string description = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp modified_at = 5;
+  int32 number_of_buys = 6;
+  PlanStatus status = 7;
+  google.protobuf.Timestamp start = 8;
+  google.protobuf.Timestamp end = 9;
+  string annotation = 10;
+  common.v1.Money budget = 11;
+  string created_by = 12;
+  string modified_by = 13;
+  string source = 14;
+  int64 version = 15;
+  int64 owning_tenant_id = 16;
+}
+
+message UpdatePlanAnnotationRequest {
+  common.v1.GUID plan_id = 1;
+  string annotation = 2;
+}
+
+message GetArchivedPlansResponse {
+  repeated PlanDetail details = 1;
+}
+
+message UpdatePlanSourceRequest {
+  common.v1.GUID plan_id = 1;
+  string source = 2;
+}
+
+message GetBuyReportRequest {
+  common.v1.GUID plan_id = 1;
+}
+
+message GetBuyReportResponse {
+  common.v1.GUID id = 1;
+  string name = 2;
+  string description = 3;
+  repeated GenericBuy buys = 4;
+  repeated ByPublisher by_publisher = 5;
+  repeated ByLabel by_label = 6;
+}
+
+message Audience {
+  common.v1.GUID id = 1;
+  string name = 2;
+  string market = 3;
+}
+
+message BuyableMedium {
+  common.v1.GUID id = 1;
+  string name = 2;
+  string publisher = 3;
+  string label = 4;
+  BuyableMediumType type = 5;
+  int32 granularity_score = 6;
+  string description = 7;
+  string market = 8;
+  string created_by = 9;
+}
+
+message GenericBuy {
+  common.v1.GUID id = 1;
+  BuyType buy_type = 2;
+  BuyableMedium buyable_medium = 3;
+  Audience buying_audience = 4;
+  google.protobuf.Timestamp start = 5;
+  google.protobuf.Timestamp end = 6;
+  string input_type = 7;
+  double input = 8;
+  common.v1.Money total_cost = 9;
+}
+
+message ByPublisher {
+  string publisher = 1;
+  common.v1.Money total_cost = 2;
+}
+
+message ByLabel {
+  string label = 1;
+  common.v1.Money total_cost = 2;
+}
+
+message GetLinearBuysOverviewRequest {
+  common.v1.GUID plan_id = 1;
+}
+
+message GetLinearBuysOverviewResponse {
+  repeated LinearBuy buys = 1;
+}
+
+message GetAddressableBuysOverviewRequest {
+  common.v1.GUID plan_id = 1;
+}
+
+message GetAddressableBuysOverviewResponse {
+  repeated AddressableBuy buys = 1;
+}
+
+message LinearBuy {
+  common.v1.GUID id = 1;
+  BuyType buy_type = 2;
+  common.v1.GUID plan_id = 3;
+  BuyableMedium buyable_medium = 4;
+  google.protobuf.Timestamp	start = 5;
+  google.protobuf.Timestamp end = 6;
+  Audience buying_audience = 7;
+  double grp = 8;
+  common.v1.Money cost_per_grp = 9;
+}
+
+message AddressableBuy {
+  common.v1.GUID id = 1;
+  BuyType buy_type = 2;
+  common.v1.GUID plan_id = 3;
+  BuyableMedium buyable_medium = 4;
+  google.protobuf.Timestamp	start = 5;
+  google.protobuf.Timestamp end = 6;
+  Audience audience = 7;
+  double impressions_000 = 8;
+  // frequency_cap = 0 represent frequency_cap to be null
+  int32 frequency_cap = 9;
+  common.v1.Money cost_per_thousand_impressions = 10;
+}
+
+enum BuyableMediumType {
+  BUYABLE_MEDIUM_TYPE_UNSPECIFIED = 0;
+  BUYABLE_MEDIUM_TYPE_TACTICAL = 1;
+  BUYABLE_MEDIUM_TYPE_HIGHLY_TACTICAL = 2;
+  BUYABLE_MEDIUM_TYPE_STRATEGICAL = 3;
+  BUYABLE_MEDIUM_TYPE_HIGHLY_STRATEGICAL = 4;
+}

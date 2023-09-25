@@ -1,0 +1,204 @@
+syntax = "proto3";
+
+package planoutcome.v3;
+
+option csharp_namespace = "Planoutcome";
+option go_package = "gitlab.com/nielsen-media/me/planning/tp/proto-golang/planoutcome/v3;planoutcome";
+
+import "planoutcome/v3/types.proto";
+import "common/v1/types.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+service PlanService {
+  // commands
+  rpc ForceComputeStatistics (PlanServiceForceComputeStatisticsRequest) returns (google.protobuf.Empty);
+  rpc AttachEvaluationAudiences (PlanServiceAttachEvaluationAudiencesRequest) returns (PlanServiceAttachEvaluationAudiencesResponse);
+  rpc DetachEvaluationAudiences (PlanServiceDetachEvaluationAudiencesRequest) returns (PlanServiceDetachEvaluationAudiencesResponse);
+  rpc AttachPlanReachGoals (PlanServiceAttachPlanReachGoalsRequest) returns (google.protobuf.Empty);
+  rpc SetPrimaryAudience (PlanServiceSetPrimaryAudienceRequest) returns (google.protobuf.Empty);
+  rpc GetPrimaryAudience (PlanServiceGetPrimaryAudienceRequest) returns (PlanServiceGetPrimaryAudienceResponse);
+  
+  // queries
+  rpc GetStatistics (PlanServiceGetStatisticsRequest) returns (PlanServiceGetStatisticsResponse);
+  rpc GetEvaluationAudiences (PlanServiceGetEvaluationAudiencesRequest) returns (PlanServiceGetEvaluationAudiencesResponse);
+  rpc GetPlanReachGoals (GetPlanReachGoalsRequest) returns (GetPlanReachGoalsResponse);
+  rpc GetKpiMetadata (google.protobuf.Empty) returns (GetKpiMetadataResponse);
+  
+  // long-running query
+  rpc GetPredictedBuys (PlanServiceGetPredictedBuysRequest) returns (PlanServiceGetPredictedBuysResponse);
+  rpc GetStatisticsForPlanVariant(PlanServiceGetStatisticsForPlanVariantRequest) returns (PlanServiceGetStatisticsForPlanVariantResponse);
+  rpc GetStatisticsForPlanVariants(PlanServiceGetStatisticsForPlanVariantsRequest) returns (PlanServiceGetStatisticsForPlanVariantsResponse);
+  rpc GetStatisticsForPlan(PlanServiceGetStatisticsForPlanRequest) returns (PlanServiceGetStatisticsForPlanResponse);
+}
+
+message PlanServiceGetStatisticsForPlanRequest {
+  PlanData plan = 1;
+  bool evaluate_results_total = 2;
+  bool evaluate_results_per_buy = 3;
+  bool evaluate_results_per_label = 4;
+}
+
+message PlanServiceGetStatisticsForPlanResponse {
+  repeated KpiResult results_total = 1;
+  repeated KpiResultForBuy results_per_buy = 2;
+  repeated KpiResultForLabel results_per_label = 3;
+}
+
+message PlanData {
+  common.v1.GUID plan_id = 1;
+  string name = 2;
+  string description = 3;
+  google.protobuf.Timestamp start_date = 4;
+  google.protobuf.Timestamp end_date = 5;
+  repeated Audience evaluation_audiences = 6;
+  repeated Buy buys = 7;
+}
+
+message Buy {
+  oneof buy {
+    LinearBuy linear_buy = 1;
+    AddressableBuy addressable_buy = 2;
+  }
+}
+
+message BM {
+  common.v1.GUID id = 1;
+}
+
+message LinearBuy {
+  string key = 1;
+  BM buyable_medium = 2;
+  google.protobuf.Timestamp start_date = 3;
+  google.protobuf.Timestamp end_date = 4;
+  Audience audience = 5;
+  double grp = 6;
+  double cost_per_grp = 7;
+}
+
+message AddressableBuy {
+  string key = 1;
+  BM buyable_medium = 2;
+  google.protobuf.Timestamp start_date = 3;
+  google.protobuf.Timestamp end_date = 4;
+  Audience audience = 5;
+  double impressions000 = 6;
+  int32 frequency_cap = 7;
+  double cost_per_impressions000 = 8;
+}
+
+message Audience {
+  common.v1.GUID id = 1;
+}
+
+message PlanServiceGetStatisticsForPlanVariantRequest {
+  common.v1.GUID plan_id = 1;
+  repeated PredictedBuy predicted_buys = 2;
+  bool evaluate_results_total = 3;
+  bool evaluate_results_per_buy = 4;
+  bool evaluate_results_per_label = 5;
+}
+
+message PlanServiceGetStatisticsForPlanVariantsRequest {
+  common.v1.GUID plan_id = 1;
+  repeated PredictedPlan predicted_plans = 2;
+  bool evaluate_results_total = 3;
+  bool evaluate_results_per_buy = 4;
+  bool evaluate_results_per_label = 5;
+}
+
+message PredictedPlan {
+  common.v1.GUID variant_id = 1;
+  repeated PredictedBuy predicted_buys = 2;
+}
+
+message PlanServiceGetStatisticsForPlanVariantResponse {
+  repeated KpiResult results_total = 1;
+  repeated KpiResultForBuy results_per_buy = 2;
+  repeated KpiResultForLabel results_per_label = 3;
+}
+
+message PlanServiceGetStatisticsForPlanVariantsResponse {
+  repeated VariantKpis variants_kpis = 1;
+}
+
+message VariantKpis {
+  common.v1.GUID variant_id = 1;
+  repeated KpiResult results_total = 2;
+  repeated KpiResultForBuy results_per_buy = 3;
+  repeated KpiResultForLabel results_per_label = 4;
+}
+
+message PlanServiceGetPredictedBuysRequest {
+  common.v1.GUID plan_id = 1;
+}
+
+message PlanServiceGetPredictedBuysResponse {
+  repeated PredictedBuy predicted_buys = 1;
+}
+
+message GetPlanReachGoalsRequest {
+   common.v1.GUID plan_id = 1;
+}
+
+message GetPlanReachGoalsResponse {
+  repeated ReachGoal reach_goals = 1;
+}
+
+message PlanServiceSetPrimaryAudienceRequest {
+  common.v1.GUID plan_id = 1;
+  common.v1.GUID audience_id = 2;
+}
+
+message PlanServiceGetPrimaryAudienceRequest {
+  common.v1.GUID plan_id = 1;
+}
+
+message PlanServiceGetPrimaryAudienceResponse {
+  common.v1.GUID audience_id = 1;
+}
+
+message PlanServiceForceComputeStatisticsRequest {
+  repeated common.v1.GUID ids = 1;
+}
+
+message PlanServiceGetEvaluationAudiencesRequest {
+  repeated common.v1.GUID ids = 1;
+}
+
+message PlanServiceGetEvaluationAudiencesResponse {
+  repeated AudiencePerType results = 1;
+}
+
+message PlanServiceDetachEvaluationAudiencesRequest {
+  repeated AudiencePerType audience_per_plan = 1;
+}
+
+message PlanServiceDetachEvaluationAudiencesResponse {
+  repeated common.v1.GUID audience_ids = 1;
+}
+
+message PlanServiceAttachEvaluationAudiencesRequest {
+  repeated AudiencePerType audience_per_plan = 1;
+}
+
+message PlanServiceAttachEvaluationAudiencesResponse {
+  repeated common.v1.GUID audience_ids = 1;
+}
+
+message PlanServiceGetStatisticsRequest {
+  repeated common.v1.GUID ids = 1;
+}
+
+message PlanServiceGetStatisticsResponse {
+  repeated KpiResultPerType results_per_plan = 1;
+}
+
+message PlanServiceAttachPlanReachGoalsRequest {
+  common.v1.GUID plan_id = 1;
+  repeated AttachReachGoal reach_goals = 2;
+}
+
+message GetKpiMetadataResponse {
+  repeated KpiMetadata kpis_metadata = 1;
+}
