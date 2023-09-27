@@ -593,6 +593,7 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "prost",
+ "prost-types",
  "tonic",
  "tonic-build",
  "uuid",

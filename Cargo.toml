@@ -8,8 +8,9 @@ edition = "2021"
 [dependencies]
 uuid = { version = "1.4.1", features = ["v4"] }
 chrono = "0.4.31"
-tonic = "0.10.1"
+tonic = { version = "0.10.1" }
 prost = "0.12.1"
+prost-types = "0.12.1"
 
 [build-dependencies]
-tonic-build = "0.10.1"
+tonic-build = { version = "0.10.1" }
