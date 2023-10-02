@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 use async_trait::async_trait;
-use crate::domain::service::Result;
+use anyhow::Result;
 
 #[async_trait]
 pub trait PlanService {
