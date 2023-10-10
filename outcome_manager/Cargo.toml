@@ -1,0 +1,20 @@
+[package]
+name = "outcome_manager"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+eventsourcing = { path = "../eventsourcing", version = "0.1.0" }
+uuid = { version = "1.4.1", features = ["v4", "serde"] }
+chrono = "0.4.31"
+tonic = { version = "0.10.1" }
+prost = "0.12.1"
+prost-types = "0.12.1"
+async-trait = { version = "0.1.73", features = [] }
+anyhow = "1.0.75"
+serde = { version = "1.0.188", features = ["derive"] }
+
+[build-dependencies]
+tonic-build = { version = "0.10.1" }
