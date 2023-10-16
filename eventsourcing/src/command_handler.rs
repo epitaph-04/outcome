@@ -1,3 +1,7 @@
+use anyhow::Result;
+use async_trait::async_trait;
+
+#[async_trait]
 pub trait CommandHandler<TCommand, TAggregate> {
-    fn handle(&self, command: TCommand);
+    async fn handle(&self, command: TCommand) -> Result<()>;
 }

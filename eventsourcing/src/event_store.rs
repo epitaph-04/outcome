@@ -5,17 +5,17 @@ use async_trait::async_trait;
 use std::collections::HashMap;
 
 #[async_trait]
-pub trait EventStore<A>: Send + Sync
+pub trait EventStore<'a, A>
 where
-    A: Aggregate,
+    A: 'a + Aggregate + Send + Sync,
 {
     async fn load_events(&self, aggregate_id: &str) -> Result<Vec<EventEnvelope<A>>>;
 
-    async fn load_aggregate(&self, aggregate_id: &str) -> Result<()>;
+    async fn load_aggregate(&self, aggregate_id: &str) -> Result<A>;
 
     async fn commit(
         &self,
-        events: Vec<A::Event>,
+        events: Vec<A::Event<'a>>,
         metadata: HashMap<String, String>,
     ) -> Result<Vec<EventEnvelope<A>>>;
 }
