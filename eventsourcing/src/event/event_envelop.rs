@@ -1,19 +1,19 @@
-use crate::aggregate::Aggregate;
-use crate::serialized_event::SerializedEvent;
+use crate::aggregate::aggregate::Aggregate;
+use crate::event::serialized_event::SerializedEvent;
 use std::collections::HashMap;
 
 #[derive(Debug)]
-pub struct EventEnvelope<'a, A>
+pub struct EventEnvelope<A>
 where
-    A: Aggregate + Send + Sync,
+    A: Aggregate,
 {
     pub aggregate_id: String,
     pub sequence: usize,
-    pub payload: A::Event<'a>,
+    pub payload: A::Event,
     pub metadata: HashMap<String, String>,
 }
 
-impl<'a, A: Aggregate> Clone for EventEnvelope<'a, A> {
+impl<A: Aggregate> Clone for EventEnvelope<A> {
     fn clone(&self) -> Self {
         Self {
             aggregate_id: self.aggregate_id.clone(),
@@ -24,7 +24,7 @@ impl<'a, A: Aggregate> Clone for EventEnvelope<'a, A> {
     }
 }
 
-impl<'a, A: Aggregate> TryFrom<SerializedEvent> for EventEnvelope<'a, A> {
+impl<A: Aggregate> TryFrom<SerializedEvent> for EventEnvelope<A> {
     type Error = anyhow::Error;
 
     fn try_from(event: SerializedEvent) -> Result<Self, Self::Error> {

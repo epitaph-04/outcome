@@ -1,4 +1,4 @@
-pub(crate) struct SqlQueryFactory {
+pub struct SqlQueryFactory {
     event_table: String,
     select_events: String,
     insert_event: String,

@@ -1,10 +1,11 @@
-use crate::aggregate::Aggregate;
-use crate::event::DomainEvent;
-use crate::event_envelop::EventEnvelope;
+use crate::aggregate::aggregate::Aggregate;
+use crate::event::event::DomainEvent;
+use crate::event::event_envelop::EventEnvelope;
 use anyhow::Result;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SerializedEvent {
     pub aggregate_id: String,
     pub sequence: usize,
@@ -37,27 +38,7 @@ impl SerializedEvent {
     }
 }
 
-pub(crate) fn serialize_events<A: Aggregate>(
-    events: &[EventEnvelope<A>],
-) -> Result<Vec<SerializedEvent>> {
-    let mut result = Vec::default();
-    for event in events {
-        result.push(SerializedEvent::try_from(event)?);
-    }
-    Ok(result)
-}
-
-pub(crate) fn deserialize_events<'a, A: Aggregate>(
-    events: Vec<SerializedEvent>,
-) -> Result<Vec<EventEnvelope<'a, A>>> {
-    let mut result = Vec::default();
-    for event in events {
-        result.push(EventEnvelope::<'a, A>::try_from(event)?);
-    }
-    Ok(result)
-}
-
-impl<'a, A: Aggregate> TryFrom<&EventEnvelope<'a, A>> for SerializedEvent {
+impl<A: Aggregate> TryFrom<&EventEnvelope<A>> for SerializedEvent {
     type Error = anyhow::Error;
 
     fn try_from(event: &EventEnvelope<A>) -> Result<Self> {

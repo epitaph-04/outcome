@@ -3,16 +3,15 @@ use crate::domain::kpi::Kpi;
 use crate::domain::reach_goal::Goal;
 use anyhow::{bail, Result};
 use chrono::{DateTime, Utc};
-use eventsourcing::aggregate::Aggregate;
-use eventsourcing::event::DomainEvent;
+use eventsourcing::aggregate::aggregate::Aggregate;
+use eventsourcing::event::event::DomainEvent;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt::Debug;
-use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
 pub enum StatisticsEvent {
-    StatisticsCreated(Uuid, String),
+    StatisticsCreated(String, String),
     PrimaryAudienceAdded(Audience, String),
     EvaluationAudiencesAdded(Vec<Audience>, String),
     ReachGoalsAdded(HashMap<Audience, Goal>, String),
@@ -41,10 +40,10 @@ pub enum StatisticsCommand {
     AddReachGoals(HashMap<Audience, Goal>, String),
 }
 
-#[derive(Default)]
+#[derive(Default, Serialize, Deserialize, Debug)]
 pub struct StatisticsAggregate {
-    pub id: Uuid,
-    version: u64,
+    pub id: String,
+    version: usize,
     pub created_by: String,
     pub modified_by: String,
     pub created_at: DateTime<Utc>,
@@ -56,9 +55,9 @@ pub struct StatisticsAggregate {
 }
 
 impl StatisticsAggregate {
-    pub fn new(id: Uuid, created_by: &str) -> Self {
+    pub fn new(id: &str, created_by: &str) -> Self {
         Self {
-            id,
+            id: id.to_string(),
             version: 1,
             created_by: created_by.to_string(),
             modified_by: created_by.to_string(),
@@ -132,10 +131,6 @@ impl Aggregate for StatisticsAggregate {
 
     fn aggregate_type() -> String {
         String::from("Statistics")
-    }
-
-    fn version(&self) -> u64 {
-        self.version
     }
 
     fn handle(&mut self, command: Self::Command) -> Result<Vec<Self::Event>>

@@ -1,10 +1,6 @@
+mod repository;
+
 pub mod aggregate;
-pub mod command_handler;
+pub mod command;
 pub mod event;
-pub mod event_envelop;
-pub mod event_store;
-pub mod memory_event_store;
-pub mod postgres_event_store;
-pub mod repository;
-mod serialized_event;
-mod sql_query_factory;
+pub mod store;
