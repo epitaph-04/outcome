@@ -1,7 +1,7 @@
 use crate::aggregate::aggregate::Aggregate;
 use crate::event::serialized_event::SerializedEvent;
-use crate::repository::event_store_repository::EventStoreRepository;
-use crate::repository::sql_query_factory::SqlQueryFactory;
+use crate::store::repository::event_store_repository::EventStoreRepository;
+use crate::store::repository::sql_query_factory::SqlQueryFactory;
 use anyhow::Result;
 use async_trait::async_trait;
 use futures::TryStreamExt;
